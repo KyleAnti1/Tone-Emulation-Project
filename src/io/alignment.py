@@ -15,3 +15,4 @@ def align_signals(dry, wet):
 
     min_len = min(len(dry_aligned), len(wet_aligned))
     return dry_aligned[:min_len], wet_aligned[:min_len]
+

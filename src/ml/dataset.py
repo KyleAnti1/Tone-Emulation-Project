@@ -4,6 +4,7 @@ import numpy as np
 
 class AudioPairDataset(Dataset):
     def __init__(self, dry, wet, window_size):
+        print ()
         assert len(dry) == len(wet)
 
         self.window_size = window_size

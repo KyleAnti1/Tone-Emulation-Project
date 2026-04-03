@@ -1,7 +1,5 @@
-import matplotlib
 import numpy as np
 import soundfile as sf
-import scipy
 
 def load_audio(path):
     """
@@ -9,9 +7,12 @@ def load_audio(path):
     :return np.array of signal + sample rate
     """
 
-    audio, sr = sf.read(path) #
-    audio = audio.astype(np.float32) # casting
-    audio = np.mean(audio, axis=1) # mono
+    audio, sr = sf.read(path)
+    audio = audio.astype(np.float32) # casting to float
+
+
+    if audio.ndim > 1: # convert to mono if stereo
+        audio = np.mean(audio, axis=1)
 
     return audio, sr
 

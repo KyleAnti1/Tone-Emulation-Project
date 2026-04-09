@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.optim as optim
+import torch
 
 def get_loss(loss_type="mse"):
 
@@ -14,34 +15,35 @@ def get_loss(loss_type="mse"):
 def get_optimizer(model, lr=1e-3):
     return optim.Adam(model.parameters(), lr=lr)
 
-def train(model, dataloader, loss_fn, optimizer, epochs, device="cpu"):
-
+def train(model, train_loader, val_loader, loss_fn, optimizer, epochs, device="cpu"):
     model.to(device)
 
     for epoch in range(epochs):
-
-        model.train()  # set model to training mode
+        # Training
+        model.train()
         total_loss = 0.0
-
-        for batch_idx, (x, y) in enumerate(dataloader):
-
-            # Move data to device
-            x = x.to(device)
-            y = y.to(device)
-
-            # Forward pass
+        for x, y in train_loader:
+            x, y = x.to(device), y.to(device)
             pred = model(x)
-
-            # Compute loss
             loss = loss_fn(pred, y)
-
-            # Backpropagation
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
             total_loss += loss.item()
 
-        avg_loss = total_loss / len(dataloader)
+        avg_train_loss = total_loss / len(train_loader)
 
-        print(f"Epoch {epoch+1}/{epochs} | Loss: {avg_loss:.6f}")
+        # Validation
+        model.eval()
+        val_loss = 0.0
+        with torch.no_grad():
+            for x, y in val_loader:
+                x, y = x.to(device), y.to(device)
+                pred = model(x)
+                val_loss += loss_fn(pred, y).item()
+
+        avg_val_loss = val_loss / len(val_loader)
+
+        print(f"Epoch {epoch+1}/{epochs} | "
+              f"Train Loss: {avg_train_loss:.6f} | "
+              f"Val Loss: {avg_val_loss:.6f}")

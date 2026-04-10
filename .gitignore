@@ -1,0 +1,7 @@
+# Audio files
+data/raw/*.wav
+data/processed/*.wav
+*.wav
+
+# Model files
+models/*.pt

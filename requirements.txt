@@ -8,4 +8,7 @@ torchaudio
 tqdm
 scikit-learn
 onnx
+onnxscript
 onnxruntime
+sounddevice
+pyaudio

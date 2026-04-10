@@ -8,11 +8,12 @@ import numpy as np
 
 from torch.utils.data import DataLoader
 
+# Load data
 dry, d_sr = load_audio("data/processed/clean_01_test.wav")
 wet, w_sr = load_audio("data/processed/driven_01_test.wav")
 
-dataset = AudioPairDataset(dry, wet, window_size=101)
-
+# Dataset and loader
+dataset = AudioPairDataset(dry, wet, window_size=101);
 loader = DataLoader(dataset, batch_size=512, shuffle=True)
 
 model = MLPModel(input_size=101)

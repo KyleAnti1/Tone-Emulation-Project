@@ -8,15 +8,37 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 # Load audio
-dry, d_sr = load_audio("data/processed/clean_01_test.wav")
-wet, w_sr = load_audio("data/processed/driven_01_test.wav")
+dry_train, dt_sr = load_audio("data/processed/training_data_10_clean.wav")
+wet_train, wt_sr = load_audio("data/processed/training_data_10_driven.wav")
+# dry_val, dv_sr = load_audio("data/processed/validation_data_10_clean.wav")
+# wet_val, wv_sr = load_audio("data/processed/validation_data_10_driven.wav")
+
+"""
+fig, axes = plt.subplots(2, 2, figsize=(14, 6))
+
+axes[0,0].plot(dry_train[:5000])
+axes[0,0].set_title('Train dry (first 5000 samples)')
+
+axes[0,1].plot(wet_train[:5000])
+axes[0,1].set_title('Train wet (first 5000 samples)')
+
+axes[1,0].plot(dry_val[:5000])
+axes[1,0].set_title('Val dry (first 5000 samples)')
+
+axes[1,1].plot(wet_val[:5000])
+axes[1,1].set_title('Val wet (first 5000 samples)')
+
+plt.tight_layout()
+plt.savefig('results/signal_diagnostic.png', dpi=150)
+plt.show()
+"""
 
 # Train/validation split
-total_len = len(dry)
+total_len = len(dry_train)
 split = int(total_len * 0.8)
 
-dry_train, dry_val = dry[:split], dry[split:]
-wet_train, wet_val = wet[:split], wet[split:]
+dry_train, dry_val = dry_train[:split], dry_train[split:]
+wet_train, wet_val = wet_train[:split], wet_train[split:]
 
 # Datasets and loaders
 train_dataset = AudioPairDataset(dry_train, wet_train, window_size=101)
@@ -59,4 +81,4 @@ target_np = y_batch.numpy()
 pred_np   = preds.numpy()
 print(f"ESR: {esr(target_np, pred_np):.6f}")
 
-torch.save(model.state_dict(), "models/mlp_baseline.pt")
+torch.save(model.state_dict(), "models/new_mlp.pt")

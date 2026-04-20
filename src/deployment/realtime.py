@@ -7,7 +7,7 @@ import time
 sess = ort.InferenceSession("src/deployment/onnx/mlp_overdrive.onnx")
 
 WINDOW_SIZE = 101
-SAMPLE_RATE = 48000
+SAMPLE_RATE = 44100
 buffer = np.zeros(WINDOW_SIZE, dtype=np.float32)
 
 def callback(indata, outdata, frames, time_info, status):

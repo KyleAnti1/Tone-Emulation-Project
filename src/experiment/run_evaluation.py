@@ -11,8 +11,8 @@ from src.io.audio import load_audio
 from src.evaluation.spectral import plot_spectral_comparison
 
 # --- Load audio ---
-dry, sr = load_audio("data/processed/clean_01_test.wav")
-wet, _  = load_audio("data/processed/driven_01_test.wav")
+dry, sr = load_audio("data/processed/training_data_10_clean.wav")
+wet, _  = load_audio("data/processed/training_data_10_driven.wav")
 
 # --- Val split ---
 total_len = len(dry)
@@ -26,7 +26,7 @@ val_loader  = DataLoader(val_dataset, batch_size=512, shuffle=False)
 
 # --- Load models ---
 mlp = MLPModel(input_size=101)
-mlp.load_state_dict(torch.load("models/mlp_baseline.pt"))
+mlp.load_state_dict(torch.load("models/new_mlp.pt"))
 mlp.eval()
 
 lstm = LSTMModel(input_size=1, hidden_size=32, num_layers=1)

@@ -8,8 +8,8 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 # --- Load audio ---
-dry, d_sr = load_audio("data/processed/clean_01_test.wav")
-wet, w_sr = load_audio("data/processed/driven_01_test.wav")
+dry, d_sr = load_audio("data/processed/training_data_10_clean.wav")
+wet, w_sr = load_audio("data/processed/training_data_10_driven.wav")
 
 # --- Train/validation split ---
 total_len = len(dry)

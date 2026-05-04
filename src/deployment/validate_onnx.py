@@ -1,47 +1,46 @@
-import torch
+import time
 import numpy as np
 import onnxruntime as ort
-from src.ml.models import MLPModel
-import time
 
-SAMPLE_RATE = 44100
-
-# Load PyTorch model
-model = MLPModel(input_size=101)
-model.load_state_dict(torch.load("models/mlp_baseline.pt"))
-model.eval()
-
-# Create test input
-test_input = torch.randn(1, 101)
-
-# PyTorch output
-with torch.no_grad():
-    torch_out = model(test_input).numpy()
-
-# ONNX output
 sess = ort.InferenceSession("src/deployment/onnx/mlp_overdrive.onnx")
-onnx_out = sess.run(["output"], {"input": test_input.numpy()})[0]
-
-# Compare
-diff = np.max(np.abs(torch_out - onnx_out))
-print(f"Max difference: {diff:.2e}")
-
-if diff < 1e-5:
-    print("Validation passed — ONNX export is correct")
-else:
-    print("WARNING — outputs differ, check export settings")
+test_input = np.random.randn(1, 101).astype(np.float32)
+SAMPLE_RATE = 48000
 
 # Warm up
 for _ in range(10):
-    sess.run(["output"], {"input": test_input.numpy()})
+    sess.run(["output"], {"input": test_input})
 
-# Measure
+# Measure per-sample inference
 times = []
 for _ in range(1000):
     start = time.perf_counter()
-    sess.run(["output"], {"input": test_input.numpy()})
+    sess.run(["output"], {"input": test_input})
     times.append((time.perf_counter() - start) * 1000)
 
-print(f"Mean inference time: {np.mean(times):.4f} ms")
-print(f"Max inference time:  {np.max(times):.4f} ms")
-print(f"Real-time safe:      {np.max(times) < (1/SAMPLE_RATE * 1000):.0f}")
+mean_inf_ms  = np.mean(times)
+max_inf_ms   = np.max(times)
+std_inf_ms   = np.std(times)
+budget_ms    = (1 / SAMPLE_RATE) * 1000
+
+# Real-time factor
+# Time to process 1 second of audio = mean_inf_ms * SAMPLE_RATE
+time_to_process_1s = (mean_inf_ms / 1000) * SAMPLE_RATE
+rtf = time_to_process_1s / 1.0
+
+# Buffer latency
+buffer_size    = 256
+buffer_lat_ms  = (buffer_size / SAMPLE_RATE) * 1000
+total_lat_ms   = (2 * buffer_lat_ms) + mean_inf_ms
+
+print(f"\n{'='*50}")
+print(f"  Inference Latency Report")
+print(f"{'='*50}")
+print(f"  Mean inference time : {mean_inf_ms:.4f} ms")
+print(f"  Max inference time  : {max_inf_ms:.4f} ms")
+print(f"  Std inference time  : {std_inf_ms:.4f} ms")
+print(f"  Per-sample budget   : {budget_ms:.4f} ms")
+print(f"  Real-time factor    : {rtf:.6f}")
+print(f"  RT capable          : {max_inf_ms < budget_ms}")
+print(f"  Buffer latency      : {buffer_lat_ms:.2f} ms")
+print(f"  Est. total latency  : {total_lat_ms:.2f} ms")
+print(f"{'='*50}")

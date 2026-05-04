@@ -31,7 +31,6 @@ def callback(indata, outdata, frames, time_info, status):
 print(sd.query_devices())
 
 print("\nStarting real-time processing — press Ctrl+C to stop")
-print("Plug your guitar into your M-Audio interface Hi-Z input")
 
 with sd.Stream(
         samplerate=SAMPLE_RATE,

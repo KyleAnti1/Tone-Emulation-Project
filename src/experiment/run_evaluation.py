@@ -22,9 +22,9 @@ dry_val = dry[split:]
 wet_val = wet[split:]
 
 val_dataset = AudioPairDataset(dry_val, wet_val, window_size=101)
-val_loader  = DataLoader(val_dataset, batch_size=512, shuffle=False)
+val_loader  = DataLoader(val_dataset, batch_size=1024, shuffle=False)
 
-# --- Load models ---
+# Load models
 mlp = MLPModel(input_size=101)
 mlp.load_state_dict(torch.load("models/new_mlp.pt"))
 mlp.eval()
@@ -33,12 +33,12 @@ lstm = LSTMModel(input_size=1, hidden_size=32, num_layers=1)
 lstm.load_state_dict(torch.load("models/lstm_baseline.pt"))
 lstm.eval()
 
-# --- ESR function ---
+# ESR function
 def esr(target, pred):
     error = target - pred
     return np.mean(error**2) / (np.mean(target**2) + 1e-8)
 
-# --- Get predictions for a model over full val set ---
+# Get predictions for a model over full val set
 def get_all_predictions(model, loader):
     all_preds   = []
     all_targets = []
@@ -99,10 +99,11 @@ with torch.no_grad():
     mlp_batch_preds  = mlp(x_batch).numpy()
     lstm_batch_preds = lstm(x_batch).numpy()
 
+print(len(y_batch))
 plt.figure(figsize=(12, 4))
-plt.plot(y_batch[:300].numpy(),  label='Target (wet)', linewidth=2)
-plt.plot(mlp_batch_preds[:300],  label='MLP',  alpha=0.8)
-plt.plot(lstm_batch_preds[:300], label='LSTM', alpha=0.8)
+plt.plot(y_batch[:1024].numpy(),  label='Target (wet)', linewidth=2)
+plt.plot(mlp_batch_preds[:1024],  label='MLP',  alpha=0.8)
+plt.plot(lstm_batch_preds[:1024], label='LSTM', alpha=0.8)
 plt.legend()
 plt.title('MLP vs LSTM — Predictions vs Target')
 plt.xlabel('Sample')
@@ -132,5 +133,33 @@ plot_spectral_comparison(
     dry, wet, sr,
     models_dict={"MLP": mlp, "LSTM": lstm}
 )
+
+from src.evaluation.metrics import evaluate_all
+
+# Evaluate all metrics on full validation set
+mlp_metrics  = evaluate_all(mlp_targets,  mlp_preds,  sr, model_name="MLP")
+lstm_metrics = evaluate_all(lstm_targets, lstm_preds, sr, model_name="LSTM")
+
+def print_comparison_table(mlp_metrics, lstm_metrics):
+    print(f"\n{'='*60}")
+    print(f"  {'Metric':<25} {'MLP':<15} {'LSTM':<15} {'Better'}")
+    print(f"  {'-'*55}")
+
+    lower_is_better = ["ESR", "RMSE", "MAE", "Spectral Convergence"]
+
+    for metric in mlp_metrics:
+        mlp_val  = mlp_metrics[metric]
+        lstm_val = lstm_metrics[metric]
+
+        if metric in lower_is_better:
+            winner = "MLP" if mlp_val < lstm_val else "LSTM"
+        else:
+            winner = "MLP" if mlp_val > lstm_val else "LSTM"
+
+        print(f"  {metric:<25} {mlp_val:<15.6f} {lstm_val:<15.6f} {winner}")
+
+    print(f"{'='*60}\n")
+
+print_comparison_table(mlp_metrics, lstm_metrics)
 
 print("\nAll evaluation complete. Figures saved to results/")

@@ -16,8 +16,8 @@ torch.onnx.export(
     input_names=["input"],
     output_names=["output"],
     dynamic_axes={"input": {0: "batch_size"}},
-    opset_version=14,  # stable version, no conversion issues
-    dynamo=False       # use legacy exporter, avoids onnxscript conflicts
+    opset_version=14,  # stable version
+    dynamo=False
 )
 
 print("Export successful")

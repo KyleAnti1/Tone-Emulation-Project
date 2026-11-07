@@ -10,11 +10,11 @@ from src.ml.dataset import AudioPairDataset
 from src.io.audio import load_audio
 from src.evaluation.spectral import plot_spectral_comparison
 
-# --- Load audio ---
+# Load audio
 dry, sr = load_audio("data/processed/training_data_10_clean.wav")
 wet, _  = load_audio("data/processed/training_data_10_driven.wav")
 
-# --- Val split ---
+# Val split
 total_len = len(dry)
 split     = int(total_len * 0.8)
 
@@ -49,7 +49,7 @@ def get_all_predictions(model, loader):
             all_targets.append(y.numpy())
     return np.concatenate(all_targets), np.concatenate(all_preds)
 
-# --- Evaluate both models ---
+# Evaluate both models
 print("Evaluating MLP...")
 mlp_targets, mlp_preds = get_all_predictions(mlp, val_loader)
 mlp_esr = esr(mlp_targets, mlp_preds)
@@ -58,14 +58,14 @@ print("Evaluating LSTM...")
 lstm_targets, lstm_preds = get_all_predictions(lstm, val_loader)
 lstm_esr = esr(lstm_targets, lstm_preds)
 
-# --- Count parameters ---
+# Count parameters
 def count_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 mlp_params  = count_params(mlp)
 lstm_params = count_params(lstm)
 
-# --- Inference latency (ONNX) ---
+# Inference latency ONNX
 sess       = ort.InferenceSession("src/deployment/onnx/mlp_overdrive.onnx")
 test_input = np.random.randn(1, 101).astype(np.float32)
 
@@ -82,7 +82,7 @@ mean_inf = np.mean(times)
 max_inf  = np.max(times)
 budget   = (1 / sr) * 1000
 
-# --- Summary table ---
+#   Summary table
 print("\n" + "=" * 65)
 print(f"{'Model':<10} {'ESR':<12} {'Params':<10} {'Mean Inf (ms)':<16} {'RT Safe'}")
 print("-" * 65)
@@ -92,7 +92,7 @@ print("=" * 65)
 print(f"\nSample budget at {sr}Hz : {budget:.4f} ms")
 print(f"MLP max inference time : {max_inf:.4f} ms")
 
-# --- Waveform comparison plot (MLP vs LSTM vs target) ---
+# Waveform comparison plot (MLP vs LSTM vs target)
 x_batch, y_batch = next(iter(val_loader))
 
 with torch.no_grad():
@@ -112,7 +112,7 @@ plt.tight_layout()
 plt.savefig('results/model_comparison_waveform.png', dpi=150)
 plt.show()
 
-# --- Error distribution comparison ---
+# Error distribution comparison
 mlp_error  = mlp_targets  - mlp_preds
 lstm_error = lstm_targets - lstm_preds
 

@@ -4,9 +4,8 @@ import numpy as np
 def align_signals(dry, wet):
     dry_env = np.abs(hilbert(dry))
     wet_env = np.abs(hilbert(wet))
-
     corr = correlate(wet_env, dry_env, mode='full')
-    lag = np.argmax(corr) - (len(dry) - 1)  # fixed: was len(wet)
+    lag = np.argmax(corr) - (len(dry) - 1)
 
     MAX_LAG_SAMPLES = 5000
     if abs(lag) > MAX_LAG_SAMPLES:

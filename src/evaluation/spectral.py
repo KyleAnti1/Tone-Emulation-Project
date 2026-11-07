@@ -43,9 +43,6 @@ def get_predictions(model, dry, wet, window_size=101):
     return np.concatenate(all_preds), wet_val[window_size//2 : window_size//2 + len(np.concatenate(all_preds))]
 
 def plot_spectral_comparison(dry, wet, sr, models_dict, window_size=101):
-    """
-    models_dict: {"MLP": mlp_model, "LSTM": lstm_model}
-    """
 
     total_len = len(dry)
     split = int(total_len * 0.8)

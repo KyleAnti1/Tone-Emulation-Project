@@ -26,7 +26,6 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
-        # x arrives as (batch, seq_len) — reshape to (batch, seq_len, 1)
         x = x.unsqueeze(-1)
         out, _ = self.lstm(x)
         # Take only the last timestep's output

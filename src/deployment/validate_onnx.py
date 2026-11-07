@@ -23,12 +23,11 @@ std_inf_ms   = np.std(times)
 budget_ms    = (1 / SAMPLE_RATE) * 1000
 
 # Real-time factor
-# Time to process 1 second of audio = mean_inf_ms * SAMPLE_RATE
 time_to_process_1s = (mean_inf_ms / 1000) * SAMPLE_RATE
 rtf = time_to_process_1s / 1.0
 
 # Buffer latency
-buffer_size    = 256
+buffer_size    = 128
 buffer_lat_ms  = (buffer_size / SAMPLE_RATE) * 1000
 total_lat_ms   = (2 * buffer_lat_ms) + mean_inf_ms
 
